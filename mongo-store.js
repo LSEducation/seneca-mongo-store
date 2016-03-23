@@ -162,6 +162,12 @@ module.exports = function(opts) {
       )
     }
 
+    ['serverOpening', 'serverClosed', 'serverDescriptionChanged', 'topologyOpening', 'topologyClosed', 'topologyDescriptionChanged', 'serverHeartbeatFailed'].forEach(function(eventName) {
+      dbinst.topology.on(eventName, function (event) {
+        seneca.log.info({dbName: conf.name, eventName, event})
+      })
+    });
+
     dbinst.open(function(err){
       if( err ) {
         return seneca.die('open',err,conf);
@@ -173,7 +179,7 @@ module.exports = function(opts) {
             seneca.log.error('init','db auth failed for '+conf.username,dbopts)
             return cb(err);
           }
-          
+
           seneca.log.debug('init','db open and authed for '+conf.username,dbopts)
           cb(null)
         })
