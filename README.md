@@ -2,8 +2,11 @@
 > A [Seneca.js][] data storage plugin
 
 # seneca-mongo-store
+[![npm version][npm-badge]][npm-url]
 [![Build Status][travis-badge]][travis-url]
-[![Gitter][gitter-badge]][gitter-url]
+[![Coverage Status][coveralls-badge]][coveralls-url]
+[![Dependency Status][david-badge]][david-url]
+[![Gitter chat][gitter-badge]][gitter-url]
 
 [![js-standard-style][standard-badge]][standard-style]
 
@@ -79,17 +82,19 @@ The standard Seneca query format is supported:
 
 - `.list$({f1:v1, f2:v2, ...})` implies pseudo-query `f1==v1 AND f2==v2, ...`.
 
-- `.list$({f1:v1,...}, {sort$:{field1:1}})` means sort by f1, ascending.
+- `.list$({f1:v1, ..., sort$:{field1:1}})` means sort by f1, ascending.
 
-- `.list$({f1:v1,...}, {sort$:{field1:-1}})` means sort by f1, descending.
+- `.list$({f1:v1, ..., sort$:{field1:-1}})` means sort by f1, descending.
 
-- `.list$({f1:v1,...}, {limit$:10})` means only return 10 results.
+- `.list$({f1:v1, ..., limit$:10})` means only return 10 results.
 
-- `.list$({f1:v1,...}, {skip$:5})` means skip the first 5.
+- `.list$({f1:v1, ..., skip$:5})` means skip the first 5.
 
-- `.list$({f1:v1,...}, {fields$:['fd1','f2']})` means only return the listed fields.
+- `.list$({f1:v1, ..., fields$:['fd1','f2']})` means only return the listed fields.
 
 Note: you can use `sort$`, `limit$`, `skip$` and `fields$` together.
+
+- `.list$({f1:v1, ..., sort$:{field1:-1}, limit$:10})` means sort by f1, descending and only return 10 results.
 
 ### Native Driver
 
@@ -135,9 +140,16 @@ Copyright Richard Rodger 2015, Licensed under [MIT][].
 [Contribution Guide]: ./CONTRIBUTING.md
 [eg]: ./eg/basic-usage.js
 
-[travis-badge]: https://travis-ci.org/rjrodger/seneca-mongo-store.svg
-[travis-url]: https://travis-ci.org/rjrodger/seneca-mongo-store
-[gitter-badge]: https://badges.gitter.im/Join%20Chat.svg
+
+[npm-badge]: https://img.shields.io/npm/v/seneca-mongo-store.svg
+[npm-url]: https://npmjs.com/package/seneca-mongo-store
+[travis-badge]: https://api.travis-ci.org/senecajs/seneca-mongo-store.svg
+[travis-url]: https://travis-ci.org/senecajs/seneca-mongo-store
+[coveralls-badge]:https://coveralls.io/repos/senecajs/seneca-mongo-store/badge.svg?branch=master&service=github
+[coveralls-url]: https://coveralls.io/github/senecajs/seneca-mongo-store?branch=master
+[david-badge]: https://david-dm.org/senecajs/seneca-mongo-store.svg
+[david-url]: https://david-dm.org/senecajs/seneca-mongo-store
+[gitter-badge]: https://badges.gitter.im/senecajs/seneca.svg
 [gitter-url]: https://gitter.im/senecajs/seneca
 [standard-badge]: https://raw.githubusercontent.com/feross/standard/master/badge.png
 [standard-style]: https://github.com/feross/standard
@@ -147,5 +159,5 @@ Copyright Richard Rodger 2015, Licensed under [MIT][].
 [Seneca.js]: https://www.npmjs.com/package/seneca
 [senecajs.org]: http://senecajs.org/
 [node-mongodb-native]: http://mongodb.github.com/node-mongodb-native/markdown-docs/queries.html
-[github issue]: https://github.com/rjrodger/seneca-mongo-store/issues
+[github issue]: https://github.com/senecajs/seneca-mongo-store/issues
 [@senecajs]: http://twitter.com/senecajs
