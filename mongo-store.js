@@ -164,9 +164,9 @@ module.exports = function(opts) {
 
     ['serverOpening', 'serverClosed', 'serverDescriptionChanged', 'topologyOpening', 'topologyClosed', 'topologyDescriptionChanged', 'serverHeartbeatFailed'].forEach(function(eventName) {
       dbinst.topology.on(eventName, function (event) {
-        seneca.log.info({dbName: conf.name, eventName, event})
+        seneca.log.info({dbName: conf.name, eventName: eventName, event: event})
       })
-    });
+    })
 
     dbinst.open(function(err){
       if( err ) {
