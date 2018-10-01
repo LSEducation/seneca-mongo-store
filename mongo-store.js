@@ -89,6 +89,7 @@ module.exports = function(opts) {
   var desc
 
   var dbinst  = null
+  var clientinst = null
   var collmap = {}
   var specifications = null
 
@@ -141,53 +142,26 @@ module.exports = function(opts) {
     },conf.options)
 
 
-    if( conf.replicaset ) {
-      var rservs = []
-      for( var i = 0; i < conf.replicaset.servers.length; i++ ) {
-	var servconf = conf.replicaset.servers[i]
-	rservs.push(new mongo.Server(servconf.host,servconf.port,dbopts))
-      }
-      var rset = new mongo.ReplSet(rservs)
-      dbinst = new mongo.Db( conf.name, rset, dbopts )
+    if( conf.url ) {
+      clientinst = new mongo.MongoClient( conf.url, dbopts )
     }
     else {
-      dbinst = new mongo.Db(
-        conf.name,
-        new mongo.Server(
-          conf.host || conf.server,
-          conf.port || mongo.Connection.DEFAULT_PORT,
-          {}
-        ),
-        dbopts
-      )
+      clientinst = new mongo.MongoClient( new mongo.Server(conf.host, conf.port, dbopts ))
     }
 
-    ['serverOpening', 'serverClosed', 'serverDescriptionChanged', 'topologyOpening', 'topologyClosed', 'topologyDescriptionChanged', 'serverHeartbeatFailed'].forEach(function(eventName) {
-      dbinst.topology.on(eventName, function (event) {
+    var topologyEvents = ['serverOpening', 'serverClosed', 'serverDescriptionChanged', 'topologyOpening', 'topologyClosed', 'topologyDescriptionChanged', 'serverHeartbeatFailed']
+    _.each(topologyEvents, function(eventName) {
+      clientinst.on(eventName, function (event) {
         seneca.log.info({dbName: conf.name, eventName: eventName, event: event})
       })
     })
 
-    dbinst.open(function(err){
+    clientinst.connect(function(err, client){
       if( err ) {
         return seneca.die('open',err,conf);
       }
-
-      if( conf.username ) {
-        dbinst.authenticate(conf.username,conf.password,function(err){
-          if( err) {
-            seneca.log.error('init','db auth failed for '+conf.username,dbopts)
-            return cb(err);
-          }
-
-          seneca.log.debug('init','db open and authed for '+conf.username,dbopts)
-          cb(null)
-        })
-      }
-      else {
-        seneca.log.debug('init','db open',dbopts)
-        cb(null)
-      }
+      dbinst = client.db(conf.name)
+      cb(null)
     })
   }
 
@@ -218,8 +192,8 @@ module.exports = function(opts) {
     name:name,
 
     close: function(args,cb) {
-      if(dbinst) {
-        dbinst.close(cb)
+      if(clientinst) {
+        clientinst.close(cb)
       }
       else return cb();
     },
@@ -306,19 +280,19 @@ module.exports = function(opts) {
           var mq = metaquery(qent,q)
           var qq = fixquery(qent,q)
 
-          coll.find(qq,mq,function(err,cur){
+          coll.find(qq,mq).toArray(function(err,items){
             if( !error(args,err,cb) ) {
               var list = []
 
-              cur.each(function(err,entp){
+              _.each(items, function(item){
                 if( !error(args,err,cb) ) {
-                  if( entp ) {
+                  if( item ) {
                     var fent = null;
-                    if( entp ) {
-                      entp.id = idstr( entp._id )
-                      delete entp._id;
+                    if( item ) {
+                      item.id = idstr( item._id )
+                      delete item._id;
 
-                      fent = qent.make$(entp);
+                      fent = qent.make$(item);
                     }
                     list.push(fent)
                   }
@@ -347,20 +321,20 @@ module.exports = function(opts) {
           var qq = fixquery(qent,q)
 
           if( all ) {
-            coll.remove(qq,function(err){
+            coll.findOneAndDelete(qq,function(err){
               seneca.log.debug('remove/all',q,desc)
               cb(err)
             })
           }
           else {
             var mq = metaquery(qent,q)
-            coll.findOne(qq,mq,function(err,entp){
+            coll.findOne(qq,mq).toArray(function(err,item){
               if( !error(args,err,cb) ) {
-                if( entp ) {
-                  coll.remove({_id:entp._id},function(err){
-                    seneca.log.debug('remove/one',q,entp,desc)
+                if( item ) {
+                  coll.findOneAndDelete({_id:item._id},function(err){
+                    seneca.log.debug('remove/one',q,item,desc)
 
-                    var ent = load ? entp : null
+                    var ent = load ? item : null
                     cb(err,ent)
                   })
                 }

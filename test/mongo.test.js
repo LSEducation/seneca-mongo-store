@@ -1,6 +1,7 @@
 /* Copyright (c) 2010-2015 Richard Rodger */
 "use strict";
 
+var _     = require('lodash')
 var seneca = require('seneca')
 var async = require('async')
 
@@ -60,10 +61,10 @@ function extratest(si,done) {
           db.collection('foo',function (err,coll){
             assert.ok(null==err)
 
-            coll.find({},{},function (err,cursor){
+            coll.find({},{}).toArray(function (err,entries){
               assert.ok(null==err)
 
-              cursor.each(function (entry) {
+              _.each(entries, function (entry) {
                 if (!entry) {
                   cb()
                 }
