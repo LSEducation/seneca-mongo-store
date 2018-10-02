@@ -280,19 +280,19 @@ module.exports = function(opts) {
           var mq = metaquery(qent,q)
           var qq = fixquery(qent,q)
 
-          coll.find(qq,mq).toArray(function(err,items){
+          coll.find(qq,mq,function(err,cur){
             if( !error(args,err,cb) ) {
               var list = []
 
-              _.each(items, function(item){
+              cur.each(function(err,entp){
                 if( !error(args,err,cb) ) {
-                  if( item ) {
+                  if( entp ) {
                     var fent = null;
-                    if( item ) {
-                      item.id = idstr( item._id )
-                      delete item._id;
+                    if( entp ) {
+                      entp.id = idstr( entp._id )
+                      delete entp._id;
 
-                      fent = qent.make$(item);
+                      fent = qent.make$(entp);
                     }
                     list.push(fent)
                   }
@@ -321,20 +321,20 @@ module.exports = function(opts) {
           var qq = fixquery(qent,q)
 
           if( all ) {
-            coll.findOneAndDelete(qq,function(err){
+            coll.remove(qq,function(err){
               seneca.log.debug('remove/all',q,desc)
               cb(err)
             })
           }
           else {
             var mq = metaquery(qent,q)
-            coll.findOne(qq,mq).toArray(function(err,item){
+            coll.findOne(qq,mq,function(err,entp){
               if( !error(args,err,cb) ) {
-                if( item ) {
-                  coll.findOneAndDelete({_id:item._id},function(err){
-                    seneca.log.debug('remove/one',q,item,desc)
+                if( entp ) {
+                  coll.remove({_id:entp._id},function(err){
+                    seneca.log.debug('remove/one',q,entp,desc)
 
-                    var ent = load ? item : null
+                    var ent = load ? entp : null
                     cb(err,ent)
                   })
                 }
